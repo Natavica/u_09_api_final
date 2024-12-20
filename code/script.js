@@ -1,4 +1,6 @@
 let farmaciasData = [];
+let mapa;
+let marcadores = L.layerGroup();
 
 // Cargar datos al iniciar
 async function cargarDatos() {
@@ -196,13 +198,153 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
 }
 
 // Función auxiliar para mostrar resultados
-function mostrarResultado(mensaje) {
+function mostrarResultado(mensaje, tipo = 'normal') {
     const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = `
-        <h2>Resultados</h2>
-        <p>${mensaje.replace(/\n/g, '<br>')}</p>
-    `;
+    
+    // Si el mensaje contiene información numérica
+    if (mensaje.includes('tiene') || mensaje.includes('Hay')) {
+        const [texto, numero] = mensaje.split('tiene').length > 1 ? 
+            mensaje.split('tiene') : mensaje.split('Hay');
+        
+        resultsDiv.innerHTML = `
+            <h2>Resultados del Análisis</h2>
+            <div class="estadistica">
+                <div class="cantidad">${numero.trim()}</div>
+                <div class="detalle">${texto.trim()}</div>
+            </div>
+        `;
+    } 
+    // Para la cadena dominante por comuna (formato especial)
+    else if (mensaje.includes('Cadena dominante')) {
+        const lineas = mensaje.split('\n');
+        const titulo = lineas[0];
+        const detalles = lineas.slice(1);
+        
+        resultsDiv.innerHTML = `
+            <h2>Resultados del Análisis</h2>
+            <div class="estadistica">
+                <div class="detalle">${titulo}</div>
+                ${detalles.map(detalle => `
+                    <div class="cantidad">${detalle.split(':')[1].split('(')[0].trim()}</div>
+                    <div class="detalle">Comuna: ${detalle.split(':')[0].trim()}</div>
+                    <div class="detalle">${detalle.split('(')[1].replace(')', '')}</div>
+                `).join('<hr style="margin: 1rem 0; border: 0; border-top: 1px solid #eee;">')}
+            </div>
+        `;
+    }
+    // Para la farmacia más aislada
+    else if (mensaje.includes('farmacia más aislada')) {
+        resultsDiv.innerHTML = `
+            <h2>Farmacia más Aislada</h2>
+            <div class="estadistica">
+                <div class="detalle">Ubicación</div>
+                <div class="cantidad">${mensaje.split('es')[1].split('en')[0].trim()}</div>
+                <div class="detalle">Comuna: ${mensaje.split('en')[1].split(',')[0].trim()}</div>
+                <div class="detalle">Dirección: ${mensaje.split(',')[1].trim()}</div>
+            </div>
+        `;
+    }
+    // Para otros tipos de mensajes
+    else {
+        resultsDiv.innerHTML = `
+            <h2>Resultados del Análisis</h2>
+            <div class="estadistica">
+                <div class="detalle">${mensaje}</div>
+            </div>
+        `;
+    }
 }
 
-// Cargar datos al iniciar la página
-window.onload = cargarDatos;
+// Inicializar mapa
+function inicializarMapa() {
+    // Coordenadas aproximadas de la Región Metropolitana
+    const coordenadasRM = [-33.4569, -70.6483];
+    
+    mapa = L.map('mapa').setView(coordenadasRM, 10);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(mapa);
+    
+    marcadores.addTo(mapa);
+}
+
+// Función para mostrar farmacias en el mapa
+function mostrarFarmaciasEnMapa(farmacias = farmaciasData) {
+    // Limpiar marcadores existentes
+    marcadores.clearLayers();
+    
+    // Agregar nuevos marcadores
+    farmacias.forEach(farmacia => {
+        const lat = parseFloat(farmacia.local_lat);
+        const lng = parseFloat(farmacia.local_lng);
+        
+        if (!isNaN(lat) && !isNaN(lng)) {
+            const marcador = L.marker([lat, lng])
+                .bindPopup(`
+                    <strong>${farmacia.local_nombre}</strong><br>
+                    Dirección: ${farmacia.local_direccion}<br>
+                    Comuna: ${farmacia.comuna_nombre}<br>
+                    Horario: ${farmacia.funcionamiento_hora_apertura} - ${farmacia.funcionamiento_hora_cierre}
+                `);
+            
+            marcadores.addLayer(marcador);
+        }
+    });
+
+    // Ajustar la vista del mapa para mostrar todos los marcadores
+    if (farmacias.length > 0) {
+        const grupo = L.featureGroup(marcadores.getLayers());
+        mapa.fitBounds(grupo.getBounds().pad(0.1));
+    }
+}
+
+// Modificar las funciones existentes para actualizar el mapa
+
+function contarPorCadena() {
+    const cadena = document.getElementById('cadenaSelect').value;
+    if (!cadena) {
+        mostrarResultado('Por favor seleccione una cadena');
+        return;
+    }
+
+    const farmaciasFiltradas = farmaciasData.filter(f => f.local_nombre.trim() === cadena);
+    const cantidad = farmaciasFiltradas.length;
+    mostrarResultado(`La cadena ${cadena} tiene ${cantidad} locales en total`);
+    mostrarFarmaciasEnMapa(farmaciasFiltradas);
+}
+
+function contarPorComuna() {
+    const comuna = document.getElementById('comunaSelect').value;
+    if (!comuna) {
+        mostrarResultado('Por favor seleccione una comuna');
+        return;
+    }
+
+    const farmaciasFiltradas = farmaciasData.filter(f => f.comuna_nombre === comuna);
+    const cantidad = farmaciasFiltradas.length;
+    mostrarResultado(`La comuna ${comuna} tiene ${cantidad} farmacias en total`);
+    mostrarFarmaciasEnMapa(farmaciasFiltradas);
+}
+
+function filtrarPorHora() {
+    const hora = document.getElementById('horaInput').value;
+    if (!hora) {
+        mostrarResultado('Por favor ingrese una hora');
+        return;
+    }
+
+    const farmaciasFiltradas = farmaciasData.filter(f => {
+        return f.funcionamiento_hora_apertura <= hora && f.funcionamiento_hora_cierre >= hora;
+    });
+
+    mostrarResultado(`Hay ${farmaciasFiltradas.length} farmacias abiertas después de las ${hora}`);
+    mostrarFarmaciasEnMapa(farmaciasFiltradas);
+}
+
+// Inicialización al cargar la página
+window.onload = async () => {
+    inicializarMapa();
+    await cargarDatos();
+    mostrarFarmaciasEnMapa();
+};
