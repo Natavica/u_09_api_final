@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Farmacias</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <h1>Sistema de Análisis de Farmacias</h1>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main-content">
+        <div class="controls">
+            <!-- Conteo por cadena -->
+            <div class="control-group">
+                <label for="cadenaSelect">Seleccionar Cadena:</label>
+                <select id="cadenaSelect">
+                    <option value="">Seleccione una cadena</option>
+                </select>
+                <button onclick="contarPorCadena()">Contar Locales</button>
+            </div>
+
+            <!-- Conteo por comuna -->
+            <div class="control-group">
+                <label for="comunaSelect">Seleccionar Comuna:</label>
+                <select id="comunaSelect">
+                    <option value="">Seleccione una comuna</option>
+                </select>
+                <button onclick="contarPorComuna()">Contar Locales</button>
+            </div>
+
+            <!-- Filtro por hora -->
+            <div class="control-group">
+                <label for="horaInput">Hora de apertura (HH:MM):</label>
+                <input type="time" id="horaInput">
+                <button onclick="filtrarPorHora()">Buscar Farmacias Abiertas</button>
+            </div>
+
+            <!-- Otros análisis -->
+            <div class="control-group">
+                <button onclick="encontrarCadenaDominante()">Cadena más presente por Comuna</button>
+                <button onclick="encontrarComunaMasFarmacias()">Comuna con más Farmacias</button>
+                <button onclick="encontrarFarmaciaMasAislada()">Farmacia más Aislada</button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2>Resultados</h2>
+            <p>Seleccione una opción para ver los resultados</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2024 Sistema de Análisis de Farmacias</p>
+    </footer>
+
+    <script src="./code/script.js"></script>
+</body>
+</html>
