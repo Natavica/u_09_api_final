@@ -169,6 +169,13 @@ button:hover {
 
 }
 
+@media (max-width: 768px) {
+    #mapa {
+       min-height: 300px;
+    }
+    
+  }
+
 /* Footer styles */
 .footer {
     background-color: #2c3e50;
