@@ -285,7 +285,6 @@ function mostrarFarmaciasEnMapa(farmacias = farmaciasData) {
                     <strong>${farmacia.local_nombre}</strong><br>
                     Dirección: ${farmacia.local_direccion}<br>
                     Comuna: ${farmacia.comuna_nombre}<br>
-                    Horario: ${farmacia.funcionamiento_hora_apertura} - ${farmacia.funcionamiento_hora_cierre}
                 `);
             
             marcadores.addLayer(marcador);
@@ -324,21 +323,6 @@ function contarPorComuna() {
     const farmaciasFiltradas = farmaciasData.filter(f => f.comuna_nombre === comuna);
     const cantidad = farmaciasFiltradas.length;
     mostrarResultado(`La comuna ${comuna} tiene ${cantidad} farmacias en total`);
-    mostrarFarmaciasEnMapa(farmaciasFiltradas);
-}
-
-function filtrarPorHora() {
-    const hora = document.getElementById('horaInput').value;
-    if (!hora) {
-        mostrarResultado('Por favor ingrese una hora');
-        return;
-    }
-
-    const farmaciasFiltradas = farmaciasData.filter(f => {
-        return f.funcionamiento_hora_apertura <= hora && f.funcionamiento_hora_cierre >= hora;
-    });
-
-    mostrarResultado(`Hay ${farmaciasFiltradas.length} farmacias abiertas después de las ${hora}`);
     mostrarFarmaciasEnMapa(farmaciasFiltradas);
 }
 
