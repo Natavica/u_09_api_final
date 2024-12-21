@@ -30,6 +30,12 @@
     overflow: hidden;
 }
 
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+  }
+
 /* Panel de control */
 .panel-control {
     padding: 1rem;
@@ -41,8 +47,15 @@
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 1rem;
-    max-width: 50%;
+    max-width: 320px;
 }
+
+@media (max-width: 768px) {
+    .control-row {
+        max-width: 900px;
+    }
+  }
+
 
 .control-row:last-child {
     margin-bottom: 0;
@@ -90,16 +103,29 @@ button:hover {
     overflow: hidden;
 }
 
+@media (max-width: 768px) {
+    .main-container {
+       flex-direction: column;
+    }
+  }
+
+
 .results {
     flex: 1;
     padding: 1.5rem;
     border: 1px solid #e1e1e1;
     border-radius: 8px;
-    min-width: 300px;
+    max-width: 320px;
     background: white;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow-y: auto;
 }
+
+@media (max-width: 768px) {
+    .results {
+        max-width: 100%;
+    }
+  }
 
 .results h2 {
     color: #2c3e50;
@@ -140,7 +166,7 @@ button:hover {
     border-radius: 8px;
     border: 1px solid #e1e1e1;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    min-height: 400px;
+
 }
 
 /* Footer styles */
